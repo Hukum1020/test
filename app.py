@@ -2,10 +2,12 @@ import os
 import json
 from flask import Flask, jsonify
 from oauth2client.service_account import ServiceAccountCredentials
+from flask_cors import CORS
 import gspread
 
 # --- Инициализация Flask
 app = Flask(__name__)
+CORS(app)
 
 SCOPE = [
     "https://spreadsheets.google.com/feeds",
