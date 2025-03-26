@@ -7,22 +7,29 @@ import gspread
 # --- Инициализация Flask
 app = Flask(__name__)
 
-# --- Получение переменных окружения
-GOOGLE_CREDENTIALS_JSON = os.getenv("GOOGLE_CREDENTIALS_JSON")
-SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
-
-# --- Запись JSON-файла с ключами (если нужно сохранить локально)
-if GOOGLE_CREDENTIALS_JSON:
-    with open("credentials.json", "w") as f:
-        f.write(GOOGLE_CREDENTIALS_JSON)
-
-# --- Настройка Google API
-scope = [
+SCOPE = [
     "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/drive"
 ]
-creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
-client = gspread.authorize(creds)
+
+SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
+if not SPREADSHEET_ID:
+    raise ValueError("❌ Ошибка: SPREADSHEET_ID не найдено!")
+
+CREDENTIALS_JSON = os.getenv("GOOGLE_CREDENTIALS_JSON")
+if not CREDENTIALS_JSON:
+    raise ValueError("❌ Ошибка: GOOGLE_CREDENTIALS_JSON не найдено!")
+
+try:
+    creds_dict = json.loads(CREDENTIALS_JSON)
+    creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n").strip()
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, SCOPE)
+    client = gspread.authorize(creds)
+    sheet = client.open_by_key(SPREADSHEET_ID).sheet1
+except Exception as e:
+    raise ValueError(f"❌ Ошибка подключения к Google Sheets: {e}")
+# --- Настройка Google API
+
 
 def get_messages():
     sheet = client.open_by_key(SPREADSHEET_ID).sheet1
