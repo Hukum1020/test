@@ -38,7 +38,7 @@ def get_messages():
 
 @app.route('/messages')
 def messages():
-    return jsonify(["Привет!", "Это сообщение из API 😊"])
+    return jsonify(get_messages())
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # Railway даёт свой порт
